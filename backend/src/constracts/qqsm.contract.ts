@@ -12,8 +12,8 @@ export const getqqsmcontract = (
   const provider = new ethers.JsonRpcProvider(url);
   const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!, provider);
   return new ethers.Contract(
-    process.env.MESSENGER_CONTRACT_ADDRESS!,
+    process.env.QQSM_CONTRACT_ADDRESS!,
     QuienQuiereSerMillonario__factory.abi,
-    wallet
+    wallet,
   );
 };

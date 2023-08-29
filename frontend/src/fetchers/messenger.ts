@@ -16,3 +16,4 @@ await fetch(`http://localhost:20001/respuesta/?option=${option}`, {
   method: 'PUT',
   headers
 }).then((response) => response.json());
+
