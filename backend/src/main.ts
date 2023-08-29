@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express, { Express, Request, Response } from 'express';
 import { getMessengerContract } from './constracts/messenger.contract';
 import { getCTokenContract } from './constracts/ctoken.contract';
+import { getqqsmcontract } from './constracts/qqsm.contract';
 
 dotenv.config();
 
@@ -16,6 +17,32 @@ app.all('/*', function (req, res, next) {
   res.header('Access-Control-Allow-Headers', 'X-Requested-With');
   next();
 });
+
+app.get('/login', async (req: Request, res: Response) => {
+  const contract = getqqsmcontract();
+  const response = await contract.getAddress();
+  res.json({
+    message: response
+  });
+});
+
+app.get('/login2', async (req: Request, res: Response) => {
+  const contract = getqqsmcontract();
+  const funcion = contract.getFunction("iniciarJuego");
+  res.json({
+    message: funcion
+  });
+});
+
+app.get('/login2', async (req: Request, res: Response) => {
+  const contract = getqqsmcontract();
+  const funcion = contract.getEvent("JuegoIniciado");
+  res.json({
+    message: funcion
+  });
+});
+
+//JuegoIniciado
 
 // let message = 'Bienvenido a la web3 🚀'
 
@@ -33,21 +60,22 @@ app.all('/*', function (req, res, next) {
 // });
 
 
-
+/*
 app.get('/hello', async (req: Request, res: Response) => {
   res.json({
     message: 'Welcome to the Web3 🚀'
   });
 });
 
-
 app.get('/ctoken', async (req: Request, res: Response) => {
   const contract = getCTokenContract();
-  const response = await contract.getMessage();
+  const response = await contract.getAddress();
   res.json({
     message: response
   });
 });
+
+*/
 
 app.get('', async (req: Request, res: Response) => {
   const contract = getCTokenContract()

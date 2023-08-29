@@ -10,3 +10,9 @@ export const setMessengerMessage = async (message: string) =>
     method: 'PUT',
     headers
   }).then((response) => response.json());
+
+export const setRespuesta = async (option: Number) =>
+await fetch(`http://localhost:20001/respuesta/?option=${option}`, {
+  method: 'PUT',
+  headers
+}).then((response) => response.json());
