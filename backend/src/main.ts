@@ -1,8 +1,6 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, Request, Response } from 'express';
-//import { getMessengerContract } from './constracts/messenger.contract';
-//import { getCTokenContract } from './constracts/ctoken.contract';
 import { getqqsmcontract } from './constracts/qqsm.contract';
 import { getAddress } from 'ethers';
 
@@ -10,6 +8,9 @@ dotenv.config();
 
 const app: Express = express();
 const port = process.env.PORT;
+
+const Web3 = require('');
+const web3 = new Web3(new Web3.providers.HttpProvider('https://rpc-mumbai.maticvigil.com')); // Reemplaza 'INFURA_URL' con tu URL de Infura o tu proveedor RPC
 
 app.options('*', cors());
 
@@ -19,6 +20,36 @@ app.all('/*', function (req, res, next) {
   next();
 });
 
+app.get('/verificar-saldo', async (req, res) => {
+  const walletAddress = req.query.address;
+
+  try {
+      const balanceWei = await web3.eth.getBalance(walletAddress);
+      const balanceEth = web3.utils.fromWei(balanceWei, 'ether');
+
+      const hasSufficientBalance = parseFloat(balanceEth) >= 50; // Cambia 50 según tus requerimientos
+
+      res.json({ success: hasSufficientBalance, balance: balanceEth });
+  } catch (error) {
+     // res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+app.get('/inicio', async (req, res) => {
+  const walletAddress = req.query.address;
+
+  try {
+      const balanceWei = await web3.eth.getBalance(walletAddress);
+      const balanceEth = web3.utils.fromWei(balanceWei, 'ether');
+
+      const hasSufficientBalance = parseFloat(balanceEth) >= 50; // Cambia 50 según tus requerimientos
+
+      res.json({ success: hasSufficientBalance, balance: balanceEth });
+  } catch (error) {
+     // res.status(500).json({ success: false, error: error.message });
+  }
+});
+/*
 app.get('/contract', async (req: Request, res: Response) => {
   const contract = getqqsmcontract();
   const response = contract.getAddress();
@@ -43,6 +74,12 @@ app.put('/login2', async (req: Request, res: Response) => {
   res.json({
     message: response
   });
+});
+
+
+
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });
 
 /*
