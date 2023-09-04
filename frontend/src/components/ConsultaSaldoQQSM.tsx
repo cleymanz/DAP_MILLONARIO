@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getVerificaSaldo } from '../fetchers/qqsm';
+import { getVerificaWallet } from '../fetchers/qqsm';
 
 export const VerificaSaldo_wallet = ({ currentUsuario }: { currentUsuario: string }) => {
   const [wallet_usuario, setMessage] = useState(currentUsuario);
@@ -21,7 +21,7 @@ export const VerificaSaldo_wallet = ({ currentUsuario }: { currentUsuario: strin
         value={wallet_usuario}
         onChange={(e) => setMessage(e.currentTarget.value)}
       />
-      <button onClick={async () => await getVerificaSaldo(wallet_usuario)}>Jugar</button>
+      <button onClick={async () => await getVerificaWallet(wallet_usuario)}>Jugar</button>
     </div>
   );
 };

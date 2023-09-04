@@ -1,41 +1,37 @@
 // SPDX-License-Identifier: UNKNOWN 
-/*
 pragma solidity ^0.8.0;
 
-contract QuienQuiereSerMillonario {
+contract quienqsm{
 
     uint256 public constant APUESTA_INICIAL = 50 ether;
     uint256 public constant LIMITE_FONDOS = 500 ether;
     bool public constant RETIRA_JUGADOR = false;
     uint256 public liquidityPool;
     Pregunta[] public preguntas;
-mapping(address => Jugador) public jugadores;
 
     struct Pregunta {
         string enunciado;
         string[4] opciones;
         uint8 respuestaCorrecta;
     }
-
     struct Jugador {
         bool jugando;
         uint256 premioActual;
         uint8 preguntaActual;
     }
-
+    mapping(address => Jugador) public jugadores;
 
     event JuegoIniciado(address jugador);
     event RespuestaDada(address jugador, uint8 seleccionada, bool correcta);
     event JuegoTerminado(address jugador, uint256 premio);
-    event PreguntaAgregada(string enunciado);
-
-    modifier soloJugador() {
-        require(jugadores[msg.sender].jugando, "No estas jugando.");
-        _;
-    }
 
     modifier fondosSuficientes() {
         require(liquidityPool > LIMITE_FONDOS, "El juego no tiene fondos suficientes.");
+        _;
+    }
+
+    modifier soloJugador() {
+        require(jugadores[msg.sender].jugando, "No estas jugando.");
         _;
     }
 
@@ -93,14 +89,24 @@ mapping(address => Jugador) public jugadores;
         preguntas.push(Pregunta("Cual de estos instrumentos tiene 88 teclas", ["Guitarra", "Arpa", "Piano", "Violin"], 3));
     }
     function retiro(bool respuesta) pure public{
-        RETIRA_JUGADOR == respuesta;
+    RETIRA_JUGADOR == respuesta;
     }
 
     function iniciarJuego() external payable fondosSuficientes {
         require(msg.value == APUESTA_INICIAL, "Debes enviar 50 tokens para jugar.");
         jugadores[msg.sender] = Jugador(true, 0, 0);
         liquidityPool += APUESTA_INICIAL;
+    // Transferir 50 ethers desde la billetera del jugador al contrato
+        payable(address(this)).transfer(APUESTA_INICIAL);
         emit JuegoIniciado(msg.sender);
+    }
+
+    function obtenerPreguntaAleatoria(uint256 indice) public view returns (string memory enunciado, string[4] memory opciones, uint8 respuestaCorrecta) {
+        require(indice < preguntas.length, "Indice fuera de rango");
+        Pregunta storage pregunta = preguntas[indice];
+        enunciado = pregunta.enunciado;
+        opciones = pregunta.opciones;
+        respuestaCorrecta = pregunta.respuestaCorrecta;
     }
 
     function responder(uint8 opcion) external soloJugador {
@@ -110,6 +116,7 @@ mapping(address => Jugador) public jugadores;
             jugadores[msg.sender].premioActual += calcularPremio();
             jugadores[msg.sender].preguntaActual++;
                 //función desea continuar
+            
             if (jugadores[msg.sender].preguntaActual >= 10) {
                 finalizarJuego();
             } else {
@@ -122,10 +129,10 @@ mapping(address => Jugador) public jugadores;
             }
         } else {
             emit RespuestaDada(msg.sender, opcion, false);
+            jugadores[msg.sender].premioActual == 0;
             finalizarJuego();
         }
     }
-
     function calcularPremio() private pure returns (uint256) {
         // Por simplicidad, cada pregunta correcta otorga 10 tokens.
         return 10 ether;
@@ -139,17 +146,4 @@ mapping(address => Jugador) public jugadores;
         payable(msg.sender).transfer(jugadores[msg.sender].premioActual);
         delete jugadores[msg.sender];
     }
-/*
-    function agregarPregunta(string memory enunciado, string[4] memory opciones, uint8 respuestaCorrecta) external {
-        // Aquí deberías tener algún modificador para garantizar que solo el propietario pueda agregar preguntas.
-        preguntas.push(Pregunta(enunciado, opciones, respuestaCorrecta));
-        emit PreguntaAgregada(enunciado);
-    }
-*/
-    // ... Funciones adicionales como retirar fondos, ver estado, etc.
-
-
-
-
-
-
+}
