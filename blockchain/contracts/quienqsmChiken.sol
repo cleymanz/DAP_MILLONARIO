@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: UNKNOWN 
 pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-contract quienqsm{
-
+contract quienqsmChiken{
+    IERC20 public chikenToken;
     uint256 public constant APUESTA_INICIAL = 50 ether;
     uint256 public constant LIMITE_FONDOS = 500 ether;
-    bool public constant RETIRA_JUGADOR = false;
     uint256 public liquidityPool;
+    uint256[] public respuestasCorrectas;
     Pregunta[] public preguntas;
 
     struct Pregunta {
@@ -15,15 +16,17 @@ contract quienqsm{
         uint8 respuestaCorrecta;
     }
     struct Jugador {
-        bool jugando;
+        bool estaJugando;
         uint256 premioActual;
         uint8 preguntaActual;
     }
     mapping(address => Jugador) public jugadores;
+    mapping(address => uint256) public jugadoresPreguntaActual;
 
     event JuegoIniciado(address jugador);
     event RespuestaDada(address jugador, uint8 seleccionada, bool correcta);
     event JuegoTerminado(address jugador, uint256 premio);
+    event JugadorRetirado(address jugador, uint256 premio);
 
     modifier fondosSuficientes() {
         require(liquidityPool > LIMITE_FONDOS, "El juego no tiene fondos suficientes.");
@@ -31,12 +34,13 @@ contract quienqsm{
     }
 
     modifier soloJugador() {
-        require(jugadores[msg.sender].jugando, "No estas jugando.");
+        require(jugadores[msg.sender].estaJugando, "No estas jugando.");
         _;
     }
 
-    constructor() {
-        liquidityPool = 1000 ether; // Liquidity pool inicial.
+    constructor(address _chikenTokenAddress) {
+        chikenToken = IERC20(_chikenTokenAddress);
+        liquidityPool = 1000;
         preguntas.push(Pregunta("Cual de estos personajes jamas aparecio en la revista Time como 'Hombre del Ano'?",["Adolf Hitler", "Ayatola Jomeini", "Joseph Stalin","Mao Zedong"],4));
         preguntas.push(Pregunta("Cual es la capital de Francia", ["Berlin", "Madrid", "Roma", "Paris"], 4));
         preguntas.push(Pregunta("Cual planeta es conocido como el Planeta Rojo", ["Marte", "Venus", "Saturno", "Jupiter"], 1));
@@ -79,7 +83,6 @@ contract quienqsm{
         preguntas.push(Pregunta("Cuantos colores tiene un arcoiris", ["5", "6", "7", "8"], 3));
         preguntas.push(Pregunta("Que pais es conocido como la tierra de los kiwis", ["Canada", "Australia", "Nueva Zelanda", "Sudafrica"], 3));
         preguntas.push(Pregunta("Cual es la capital de Brasil", ["Buenos Aires", "Rio de Janeiro", "Lima", "Brasilia"], 4));
-        preguntas.push(Pregunta("Cual es la capital de Brasil", ["Buenos Aires", "Rio de Janeiro", "Lima", "Brasilia"], 4));
         preguntas.push(Pregunta("Que ciudad es conocida como 'La Ciudad de los Vientos'", ["Los Angeles", "Nueva York", "Chicago", "Miami"], 3));
         preguntas.push(Pregunta("En que deporte se usa un bate y una pelota para correr bases", ["Criquet", "Rugby", "Beisbol", "Hockey"], 3));
         preguntas.push(Pregunta("Que planeta esta mas cerca del sol", ["Marte", "Mercurio", "Venus", "Tierra"], 2));
@@ -88,16 +91,22 @@ contract quienqsm{
         preguntas.push(Pregunta("Cual es el libro sagrado del Islam", ["Biblia", "Torah", "Vedas", "Coran"], 4));
         preguntas.push(Pregunta("Cual de estos instrumentos tiene 88 teclas", ["Guitarra", "Arpa", "Piano", "Violin"], 3));
     }
-    function retiro(bool respuesta) pure public{
-    RETIRA_JUGADOR == respuesta;
+    function retirarse() public {
+        require(jugadores[msg.sender].estaJugando == true, "No estas jugando.");
+        require(jugadoresPreguntaActual[msg.sender] == 5, "Solo puedes retirarte despues de la pregunta 5.");
+
+        uint256 premio = calcularPremioRetiro(); 
+        chikenToken.transfer(msg.sender, premio);
+        liquidityPool -= premio;
+        jugadores[msg.sender].estaJugando == false;
+
+        emit JugadorRetirado(msg.sender, premio);
     }
 
     function iniciarJuego() external payable fondosSuficientes {
-        require(msg.value == APUESTA_INICIAL, "Debes enviar 50 tokens para jugar.");
-        jugadores[msg.sender] = Jugador(true, 0, 0);
+        require(chikenToken.allowance(msg.sender,  address(this)) >= APUESTA_INICIAL, "Debes aprobar la transferencia de 50 CHIKEN para jugar.");
+        chikenToken.transferFrom(msg.sender, address(this), APUESTA_INICIAL);
         liquidityPool += APUESTA_INICIAL;
-    // Transferir 50 ethers desde la billetera del jugador al contrato
-        payable(address(this)).transfer(APUESTA_INICIAL);
         emit JuegoIniciado(msg.sender);
     }
 
@@ -109,41 +118,36 @@ contract quienqsm{
         respuestaCorrecta = pregunta.respuestaCorrecta;
     }
 
-    function responder(uint8 opcion) external soloJugador {
-        
-        require(opcion < 4, "Opcion invalida.");
-        if (opcion == preguntas[jugadores[msg.sender].preguntaActual].respuestaCorrecta) {
-            jugadores[msg.sender].premioActual += calcularPremio();
-            jugadores[msg.sender].preguntaActual++;
-                //función desea continuar
+    function responder(uint256 _respuesta) public {
+        require(jugadores[msg.sender].estaJugando == true, "No estas jugando.");
+        require(_respuesta < 4, "Respuesta invalida.");
+
+        if (_respuesta == respuestasCorrectas[jugadoresPreguntaActual[msg.sender]]) {
+            jugadoresPreguntaActual[msg.sender]++;
             
-            if (jugadores[msg.sender].preguntaActual >= 10) {
-                finalizarJuego();
-            } else {
-                emit RespuestaDada(msg.sender, opcion, true);
-                if (jugadores[msg.sender].preguntaActual == 5) {
-                    if (RETIRA_JUGADOR == true){
-                        finalizarJuego();
-                    }
-                }
+            if(jugadoresPreguntaActual[msg.sender] == 10) {
+                uint256 premio = calcularPremioFinal();
+                chikenToken.transfer(msg.sender, premio);
+                liquidityPool -= premio;
+                jugadores[msg.sender].estaJugando = false;
             }
         } else {
-            emit RespuestaDada(msg.sender, opcion, false);
-            jugadores[msg.sender].premioActual == 0;
-            finalizarJuego();
+            jugadores[msg.sender].estaJugando = false;
         }
-    }
-    function calcularPremio() private pure returns (uint256) {
-        // Por simplicidad, cada pregunta correcta otorga 10 tokens.
-        return 10 ether;
     }
 
     function finalizarJuego() private {
         emit JuegoTerminado(msg.sender, jugadores[msg.sender].premioActual);
-
         liquidityPool -= jugadores[msg.sender].premioActual;
-
-        payable(msg.sender).transfer(jugadores[msg.sender].premioActual);
+        require(chikenToken.transfer(msg.sender, jugadores[msg.sender].premioActual), "La transferencia de tokens CHIKEN ha fallado.");
         delete jugadores[msg.sender];
+    }
+
+    function calcularPremioRetiro() private pure returns (uint256) {
+        return 5 * 10 ether;
+    }
+
+    function calcularPremioFinal() private pure returns (uint256) {
+        return 10 * 50 ether;
     }
 }

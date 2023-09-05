@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { getVerificaWallet } from './fetchers/quienqsm';
-import {LlamarPreguntas} from './components/getPreguntaAleatoria';
+import { LlamarPreguntas } from './components/getPreguntaAleatoria';
+//import {LlamarPreguntas} from './components/getPreguntaAleatoria';
 import { getPreguntaAleatoria } from './fetchers/quienqsm';
-import { setRespuestaSeleccionada } from './fetchers/quienqsm';
+import { getIniciarJuego } from './fetchers/quienqsm';
+//import { setRespuestaSeleccionada } from './fetchers/quienqsm';
 import { IPregunta } from './components/types';
 
 // Importamos el componente si lo vamos a usar.
@@ -12,34 +14,38 @@ import { IPregunta } from './components/types';
 function App() {
   const [address, setAddress] = useState(''); // Añadimos un estado para la dirección.
   const [balance, setBalance] = useState(null); // Estado para el saldo.
-  const [pregunta, setPregunta] = useState<IPregunta | null>(null);
-  useEffect(() => {
-    getApiData();
-  }, []);
+  const [message, setMessage] = useState('');
+  const [preguntaAleatoria, setPreguntaAleatoria] = useState<IPregunta | null>(null);
 
+  const isValidEthereumAddress = (address: string) => {
+    const regex = /^0x[a-fA-F0-9]{40}$/;
+    return regex.test(address);
+  };
   const getApiData = async () => {
     try {
       const data = await getVerificaWallet(address);
+      console.log("Respuesta completa del servidor:", data);
       setBalance(data.balance);
-      if (data.balance >= 0.0001) {
-        const preguntaData = await getPreguntaAleatoria();
-        setPregunta(preguntaData);
+      if (parseFloat(data.balance) >= 50) {
+        const pregunta = await getPreguntaAleatoria();
+        setPreguntaAleatoria(pregunta);
+        const data = await getIniciarJuego(address);
+        // Aquí puedes redirigir al juego o hacer alguna otra acción.
+      } else {
+        setMessage('No tienes saldo suficiente. Recarga y vuelve más tarde.');
       }
-
-    } catch (error:any) {
+    } catch (error: any) {
       console.error('Error al obtener datos:', error);
+      setMessage('Hubo un error al verificar tu saldo. Inténtalo de nuevo.');
     }
   };
-
   const handleClick = () => {
-    if (address) {
+    if (isValidEthereumAddress(address)) {
       getApiData();
     } else {
-      alert('Por favor ingrese una dirección válida.');
+      setMessage('Por favor, ingrese una dirección de billetera válida.');
     }
-    
-  };
-
+  }
   return (
     <div className="container">
       <h1 className="title">Quien quiere ser millonario</h1>
@@ -55,7 +61,10 @@ function App() {
         placeholder="Ingrese dirección de billetera"
       />
       <button onClick={handleClick} className="button"> Jugar </button>
-      {pregunta && <LlamarPreguntas pregunta={pregunta} />}
+      <div className="container">
+      {preguntaAleatoria && (<LlamarPreguntas pregunta={preguntaAleatoria} />
+    )}
+      </div>
     </div>
   );
 }
