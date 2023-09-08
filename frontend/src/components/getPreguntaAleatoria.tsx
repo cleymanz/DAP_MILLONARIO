@@ -1,15 +1,26 @@
 import { useState, useEffect } from 'react';
 import { IPregunta } from '../components/types';
+import {enviarRespuesta} from '../fetchers/quienqsm';
 
 export const LlamarPreguntas = ({ pregunta }: { pregunta: IPregunta }) => {
   const [respuestaSeleccionada, setRespuestaSeleccionada] = useState<number | null>(null);
   const [esCorrecto, setEsCorrecto] = useState<boolean | null>(null);
 
-  const handleRespuesta = (index: number) => {
+  const handleRespuesta = async (index: number) => {
     setRespuestaSeleccionada(index);
-    // Aquí estás comparando la respuesta del jugador con la respuesta correcta.
-    setEsCorrecto(index === parseInt(pregunta.respuestaCorrecta) - 1); // Restamos 1 porque la indexación de arrays empieza en 0.
+    try {
+      const response = await enviarRespuesta(index);
+      if (response.message === "Respuesta enviada con éxito") {
+
+      }
+    } catch (error) {
+      console.error("Error al enviar la respuesta:", error);
+    }
   };
+
+  useEffect(() => {
+
+  }, []);
 
   return (
     <div
@@ -31,7 +42,7 @@ export const LlamarPreguntas = ({ pregunta }: { pregunta: IPregunta }) => {
         ))}
         {respuestaSeleccionada !== null && (
           <div>
-            {esCorrecto ? '¡Correcto!' : `Incorrecto. La respuesta correcta era: ${pregunta.opciones[parseInt(pregunta.respuestaCorrecta) - 1]}`}
+            {esCorrecto ? '¡Correcto, Pasamos a la siguiente Pregunta!' : `Incorrecto. La respuesta correcta era: ${pregunta.opciones[parseInt(pregunta.respuestaCorrecta) - 1]}`}
           </div>
         )}
       </>

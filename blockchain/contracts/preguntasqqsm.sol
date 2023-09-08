@@ -1,46 +1,16 @@
-// SPDX-License-Identifier: UNKNOWN 
-/*
+// SPDX-License-Identifier:UNKNOWN 
 pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract QuienQuiereSerMillonario {
-
-    uint256 public constant APUESTA_INICIAL = 50 ether;
-    uint256 public constant LIMITE_FONDOS = 500 ether;
-    bool public constant RETIRA_JUGADOR = false;
-    uint256 public liquidityPool;
+contract preguntasqqsm is Ownable{
     Pregunta[] public preguntas;
-mapping(address => Jugador) public jugadores;
-
     struct Pregunta {
-        string enunciado;
-        string[4] opciones;
-        uint8 respuestaCorrecta;
+    string enunciado;
+    string[4] opciones;
+    uint8 respuestaCorrecta;
     }
-
-    struct Jugador {
-        bool jugando;
-        uint256 premioActual;
-        uint8 preguntaActual;
-    }
-
-
-    event JuegoIniciado(address jugador);
-    event RespuestaDada(address jugador, uint8 seleccionada, bool correcta);
-    event JuegoTerminado(address jugador, uint256 premio);
-    event PreguntaAgregada(string enunciado);
-
-    modifier soloJugador() {
-        require(jugadores[msg.sender].jugando, "No estas jugando.");
-        _;
-    }
-
-    modifier fondosSuficientes() {
-        require(liquidityPool > LIMITE_FONDOS, "El juego no tiene fondos suficientes.");
-        _;
-    }
-
     constructor() {
-        liquidityPool = 1000 ether; // Liquidity pool inicial.
         preguntas.push(Pregunta("Cual de estos personajes jamas aparecio en la revista Time como 'Hombre del Ano'?",["Adolf Hitler", "Ayatola Jomeini", "Joseph Stalin","Mao Zedong"],4));
         preguntas.push(Pregunta("Cual es la capital de Francia", ["Berlin", "Madrid", "Roma", "Paris"], 4));
         preguntas.push(Pregunta("Cual planeta es conocido como el Planeta Rojo", ["Marte", "Venus", "Saturno", "Jupiter"], 1));
@@ -83,7 +53,6 @@ mapping(address => Jugador) public jugadores;
         preguntas.push(Pregunta("Cuantos colores tiene un arcoiris", ["5", "6", "7", "8"], 3));
         preguntas.push(Pregunta("Que pais es conocido como la tierra de los kiwis", ["Canada", "Australia", "Nueva Zelanda", "Sudafrica"], 3));
         preguntas.push(Pregunta("Cual es la capital de Brasil", ["Buenos Aires", "Rio de Janeiro", "Lima", "Brasilia"], 4));
-        preguntas.push(Pregunta("Cual es la capital de Brasil", ["Buenos Aires", "Rio de Janeiro", "Lima", "Brasilia"], 4));
         preguntas.push(Pregunta("Que ciudad es conocida como 'La Ciudad de los Vientos'", ["Los Angeles", "Nueva York", "Chicago", "Miami"], 3));
         preguntas.push(Pregunta("En que deporte se usa un bate y una pelota para correr bases", ["Criquet", "Rugby", "Beisbol", "Hockey"], 3));
         preguntas.push(Pregunta("Que planeta esta mas cerca del sol", ["Marte", "Mercurio", "Venus", "Tierra"], 2));
@@ -92,64 +61,10 @@ mapping(address => Jugador) public jugadores;
         preguntas.push(Pregunta("Cual es el libro sagrado del Islam", ["Biblia", "Torah", "Vedas", "Coran"], 4));
         preguntas.push(Pregunta("Cual de estos instrumentos tiene 88 teclas", ["Guitarra", "Arpa", "Piano", "Violin"], 3));
     }
-    function retiro(bool respuesta) pure public{
-        RETIRA_JUGADOR == respuesta;
+    function obtenerPreguntaAleatoria(uint256 indice) public view returns (string memory enunciado, string[4] memory opciones, uint8 respuestaCorrecta) {
+    Pregunta storage pregunta = preguntas[indice];
+    enunciado = pregunta.enunciado;
+    opciones = pregunta.opciones;
+    respuestaCorrecta = pregunta.respuestaCorrecta;
     }
-
-    function iniciarJuego() external payable fondosSuficientes {
-        require(msg.value == APUESTA_INICIAL, "Debes enviar 50 tokens para jugar.");
-        jugadores[msg.sender] = Jugador(true, 0, 0);
-        liquidityPool += APUESTA_INICIAL;
-        emit JuegoIniciado(msg.sender);
-    }
-
-    function responder(uint8 opcion) external soloJugador {
-        
-        require(opcion < 4, "Opcion invalida.");
-        if (opcion == preguntas[jugadores[msg.sender].preguntaActual].respuestaCorrecta) {
-            jugadores[msg.sender].premioActual += calcularPremio();
-            jugadores[msg.sender].preguntaActual++;
-                //función desea continuar
-            if (jugadores[msg.sender].preguntaActual >= 10) {
-                finalizarJuego();
-            } else {
-                emit RespuestaDada(msg.sender, opcion, true);
-                if (jugadores[msg.sender].preguntaActual == 5) {
-                    if (RETIRA_JUGADOR == true){
-                        finalizarJuego();
-                    }
-                }
-            }
-        } else {
-            emit RespuestaDada(msg.sender, opcion, false);
-            finalizarJuego();
-        }
-    }
-
-    function calcularPremio() private pure returns (uint256) {
-        // Por simplicidad, cada pregunta correcta otorga 10 tokens.
-        return 10 ether;
-    }
-
-    function finalizarJuego() private {
-        emit JuegoTerminado(msg.sender, jugadores[msg.sender].premioActual);
-
-        liquidityPool -= jugadores[msg.sender].premioActual;
-
-        payable(msg.sender).transfer(jugadores[msg.sender].premioActual);
-        delete jugadores[msg.sender];
-    }
-/*
-    function agregarPregunta(string memory enunciado, string[4] memory opciones, uint8 respuestaCorrecta) external {
-        // Aquí deberías tener algún modificador para garantizar que solo el propietario pueda agregar preguntas.
-        preguntas.push(Pregunta(enunciado, opciones, respuestaCorrecta));
-        emit PreguntaAgregada(enunciado);
-    }
-*/
-    // ... Funciones adicionales como retirar fondos, ver estado, etc.
-
-
-
-
-
-
+}

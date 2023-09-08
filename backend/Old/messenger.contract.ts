@@ -1,4 +1,4 @@
-
+/*
 import dotenv from 'dotenv';
 import { ethers } from 'ethers';
 import { Messenger__factory } from '../../../blockchain/typechain/factories/Messenger__factory';
@@ -17,3 +17,4 @@ export const getMessengerContract = (
     wallet
   );
 };
+*/
