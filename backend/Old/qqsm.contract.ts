@@ -1,4 +1,4 @@
-
+/*
 import dotenv from 'dotenv';
 import { ethers } from 'ethers';
 import { QuienQuiereSerMillonario__factory } from '../../../blockchain/typechain/factories/QuienQuiereSerMillonario__factory';
@@ -17,3 +17,4 @@ export const getqqsmcontract = (
     wallet,
   );
 };
+*/

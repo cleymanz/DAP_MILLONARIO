@@ -1,11 +1,13 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { useEffect, useState } from 'react';
-import express, { Express, Request, Response } from 'express';
+import express, { Express, Request, Response, request } from 'express';
 import { getquienqsmcontract } from './constracts/qqsmChiken.contract';
-import { getChikenTokenContract } from './constracts/ChikenToken.contract'; // Asegúrate de importarlo correctamente
+import { getChikenTokenContract } from './constracts/ChikenToken.contract';
+//import { mintChikenTokens } from './constracts/ChikenToken.contract';  // Asegúrate de importarlo correctamente
 import { ethers} from 'ethers';
 import Web3 from 'web3';
+import { ChikenToken } from '../../blockchain/typechain/ChikenToken';
 
 dotenv.config();
 
@@ -25,7 +27,7 @@ const getApiData = async () => {
   const response =  getquienqsmcontract();
   
 };
-
+//OK
 app.get('/verificar-saldo', async (req, res) => {
   const walletAddress = req.query.address;
   const requiredBalance = 50;
@@ -41,7 +43,7 @@ app.get('/verificar-saldo', async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
-
+//OK
 app.get('/obtener-pregunta-aleatoria', async (req: Request, res: Response) => {
   const contrato = getquienqsmcontract();
 
@@ -63,22 +65,23 @@ app.get('/obtener-pregunta-aleatoria', async (req: Request, res: Response) => {
   }
 });
 
-app.post('/iniciar-juego', async (req: Request, res: Response) => {
+app.post('/iniciar-juego', async (req, res) => {
   try {
-    const { walletAddress } = req.body; // Obtiene la dirección de billetera del cuerpo de la solicitud
-    const contrato = getquienqsmcontract(); // Obtén la instancia del contrato
-
-    // Llama a la función iniciarJuego en tu contrato
-    const tx = await contrato.iniciarJuego({ from: walletAddress });
-
-    // Espera a que la transacción sea minada
-    await tx.wait();
-
-    res.status(200).send({ message: "Juego iniciado con éxito" });
-  } catch (error) {
-    console.error("Error al iniciar el juego:", error);
-    res.status(500).send("Error al iniciar el juego.");
-  }
+  const contrato = getquienqsmcontract();
+  const txResponse = await contrato.iniciarJuego();
+  if (txResponse instanceof Error || txResponse.error) {
+    throw new Error(`Error from Ethereum: ${txResponse.error.message}`);
+}
+  console.log('Mensaje txResponse: ', txResponse);
+  const receipt = await txResponse.wait();
+  res.status(200).send({
+      message: 'Juego iniciado con éxito',
+      txHash: receipt.transactionHash
+  });
+    } catch (error) {
+      console.error('Error al iniciar el juego:', error);
+      res.status(500).send('Error al iniciar el juego.');
+    }
 });
 
 app.post('/enviar-respuesta', async (req: Request, res: Response) => {
@@ -99,42 +102,38 @@ app.post('/enviar-respuesta', async (req: Request, res: Response) => {
   }
 });
 
-/*
-app.put('/set-respuesta-seleccionada', async (req: Request, res: Response) => {
-  try {
-    if(!req.body.message) {
-      return res.status(400).json({ error: 'Message is required' });
-    }
-    
-    const option = req.body.message;
-    const contract = getquienqsmcontract();
-    const response = await contract.responder(option);
+app.get('/aprobar-transferencia', async (req, res) => {
+  const walletAddress = req.query.address;
+  const requiredBalance = 50;
 
-    res.json({ message: response });
-  } catch (error) {
-    console.error("Error al procesar la respuesta:", error);
-    res.status(500).send("Error al procesar la respuesta.");
+  try {
+    const chikenTokenContract = getChikenTokenContract();
+    const aprobar = await chikenTokenContract.approve(walletAddress as string, requiredBalance);
+    res.json({ success: aprobar});
+    console.log('Wallet aprobado');
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
   }
 });
-¨*/
-
-
 /*
-app.post('/iniciar-juego', async (req: Request, res: Response) => {
+app.get('/mint', async (req, res) => {
+  const amount = typeof req.query.amount === 'string' ? req.query.amount : undefined;
+  const recipientAddress = typeof req.query.recipientAddress === 'string' ? req.query.recipientAddress : undefined;
+
+  if (!amount || !recipientAddress) {
+      return res.status(400).json({ success: false, message: 'amount and recipientAddress are required' });
+  }
+
   try {
-    const contract = getquienqsmcontract(); // Usa tu función para obtener la instancia del contrato
-
-    // Llama a la función iniciarJuego en tu contrato
-    const tx = await contract.iniciarJuego();
-    await tx.wait(); // Espera a que la transacción sea minada
-
-    res.status(200).send({ message: "Juego iniciado con éxito" });
-  } catch (error) {
-    console.error("Error al iniciar el juego:", error);
-    res.status(500).send("Error al iniciar el juego.");
+      const receipt = await mintChikenTokens(amount, recipientAddress);
+      res.json({ success: true, receipt });
+  } catch (error: any) {
+      console.error("Error minting tokens:", error);
+      res.status(500).json({ success: false, message: error.message });
   }
 });
 */
+
 app.listen(port, () => {
   console.log(`⚡️[server]: DApp API Server is running at http://localhost:${port}`);
 });

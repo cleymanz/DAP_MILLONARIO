@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { getVerificaWallet } from './fetchers/quienqsm';
 import { LlamarPreguntas } from './components/getPreguntaAleatoria';
-//import {LlamarPreguntas} from './components/getPreguntaAleatoria';
 import { getPreguntaAleatoria } from './fetchers/quienqsm';
+import { approveTokens } from './fetchers/quienqsm';
 import { getIniciarJuego } from './fetchers/quienqsm';
 //import { setRespuestaSeleccionada } from './fetchers/quienqsm';
 import { IPregunta } from './components/types';
@@ -29,8 +29,6 @@ function App() {
       if (parseFloat(data.balance) >= 50) {
         const pregunta = await getPreguntaAleatoria();
         setPreguntaAleatoria(pregunta);
-        const data = await getIniciarJuego(address);
-        // Aquí puedes redirigir al juego o hacer alguna otra acción.
       } else {
         setMessage('No tienes saldo suficiente. Recarga y vuelve más tarde.');
       }
@@ -39,13 +37,23 @@ function App() {
       setMessage('Hubo un error al verificar tu saldo. Inténtalo de nuevo.');
     }
   };
-  const handleClick = () => {
+  const handleClick = async () => {
     if (isValidEthereumAddress(address)) {
-      getApiData();
+      try {
+        approveTokens(address);
+        getIniciarJuego();
+        getApiData();
+    } catch (error: any) {
+      setMessage(error.message || "Hubo un error al intentar aprobar los tokens.");
+    }
     } else {
       setMessage('Por favor, ingrese una dirección de billetera válida.');
     }
   }
+
+  useEffect(() => {
+
+  }, []);
   return (
     <div className="container">
       <h1 className="title">Quien quiere ser millonario</h1>
@@ -62,6 +70,7 @@ function App() {
       />
       <button onClick={handleClick} className="button"> Jugar </button>
       <div className="container">
+        {message}
       {preguntaAleatoria && (<LlamarPreguntas pregunta={preguntaAleatoria} />
     )}
       </div>

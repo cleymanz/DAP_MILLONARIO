@@ -1,3 +1,4 @@
+/*
 
 import dotenv from 'dotenv';
 import { ethers } from 'ethers';
@@ -17,3 +18,4 @@ export const getCTokenContract = (
     wallet
   );
 };
+*/
