@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import { ethers } from 'ethers';
 import { ChikenToken__factory } from '../../../blockchain/typechain/factories/ChikenToken__factory';
 import { BlockchainUrlsEnum } from './urls';

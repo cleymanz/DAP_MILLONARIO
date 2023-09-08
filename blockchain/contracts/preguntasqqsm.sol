@@ -1,44 +1,20 @@
+<<<<<<<< HEAD:blockchain/contracts/preguntasqqsm.sol
+// SPDX-License-Identifier:UNKNOWN 
+========
 // SPDX-License-Identifier: UNKNOWN 
-
-/*
+>>>>>>>> parent of c727f5c (05/09):blockchain/contracts/quienqsm.sol
 pragma solidity ^0.8.0;
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract quienqsm{
-
-    uint256 public constant APUESTA_INICIAL = 50 ether;
-    uint256 public constant LIMITE_FONDOS = 500 ether;
-    bool public constant RETIRA_JUGADOR = false;
-    uint256 public liquidityPool;
+contract preguntasqqsm is Ownable{
     Pregunta[] public preguntas;
-
     struct Pregunta {
-        string enunciado;
-        string[4] opciones;
-        uint8 respuestaCorrecta;
+    string enunciado;
+    string[4] opciones;
+    uint8 respuestaCorrecta;
     }
-    struct Jugador {
-        bool jugando;
-        uint256 premioActual;
-        uint8 preguntaActual;
-    }
-    mapping(address => Jugador) public jugadores;
-
-    event JuegoIniciado(address jugador);
-    event RespuestaDada(address jugador, uint8 seleccionada, bool correcta);
-    event JuegoTerminado(address jugador, uint256 premio);
-
-    modifier fondosSuficientes() {
-        require(liquidityPool > LIMITE_FONDOS, "El juego no tiene fondos suficientes.");
-        _;
-    }
-
-    modifier soloJugador() {
-        require(jugadores[msg.sender].jugando, "No estas jugando.");
-        _;
-    }
-
     constructor() {
-        liquidityPool = 1000 ether; // Liquidity pool inicial.
         preguntas.push(Pregunta("Cual de estos personajes jamas aparecio en la revista Time como 'Hombre del Ano'?",["Adolf Hitler", "Ayatola Jomeini", "Joseph Stalin","Mao Zedong"],4));
         preguntas.push(Pregunta("Cual es la capital de Francia", ["Berlin", "Madrid", "Roma", "Paris"], 4));
         preguntas.push(Pregunta("Cual planeta es conocido como el Planeta Rojo", ["Marte", "Venus", "Saturno", "Jupiter"], 1));
@@ -81,7 +57,6 @@ contract quienqsm{
         preguntas.push(Pregunta("Cuantos colores tiene un arcoiris", ["5", "6", "7", "8"], 3));
         preguntas.push(Pregunta("Que pais es conocido como la tierra de los kiwis", ["Canada", "Australia", "Nueva Zelanda", "Sudafrica"], 3));
         preguntas.push(Pregunta("Cual es la capital de Brasil", ["Buenos Aires", "Rio de Janeiro", "Lima", "Brasilia"], 4));
-        preguntas.push(Pregunta("Cual es la capital de Brasil", ["Buenos Aires", "Rio de Janeiro", "Lima", "Brasilia"], 4));
         preguntas.push(Pregunta("Que ciudad es conocida como 'La Ciudad de los Vientos'", ["Los Angeles", "Nueva York", "Chicago", "Miami"], 3));
         preguntas.push(Pregunta("En que deporte se usa un bate y una pelota para correr bases", ["Criquet", "Rugby", "Beisbol", "Hockey"], 3));
         preguntas.push(Pregunta("Que planeta esta mas cerca del sol", ["Marte", "Mercurio", "Venus", "Tierra"], 2));
@@ -90,26 +65,14 @@ contract quienqsm{
         preguntas.push(Pregunta("Cual es el libro sagrado del Islam", ["Biblia", "Torah", "Vedas", "Coran"], 4));
         preguntas.push(Pregunta("Cual de estos instrumentos tiene 88 teclas", ["Guitarra", "Arpa", "Piano", "Violin"], 3));
     }
-    function retiro(bool respuesta) pure public{
-    RETIRA_JUGADOR == respuesta;
-    }
-
-    function iniciarJuego() external payable fondosSuficientes {
-        require(msg.value == APUESTA_INICIAL, "Debes enviar 50 tokens para jugar.");
-        jugadores[msg.sender] = Jugador(true, 0, 0);
-        liquidityPool += APUESTA_INICIAL;
-    // Transferir 50 ethers desde la billetera del jugador al contrato
-        payable(address(this)).transfer(APUESTA_INICIAL);
-        emit JuegoIniciado(msg.sender);
-    }
-
     function obtenerPreguntaAleatoria(uint256 indice) public view returns (string memory enunciado, string[4] memory opciones, uint8 respuestaCorrecta) {
-        require(indice < preguntas.length, "Indice fuera de rango");
-        Pregunta storage pregunta = preguntas[indice];
-        enunciado = pregunta.enunciado;
-        opciones = pregunta.opciones;
-        respuestaCorrecta = pregunta.respuestaCorrecta;
+    Pregunta storage pregunta = preguntas[indice];
+    enunciado = pregunta.enunciado;
+    opciones = pregunta.opciones;
+    respuestaCorrecta = pregunta.respuestaCorrecta;
     }
+<<<<<<<< HEAD:blockchain/contracts/preguntasqqsm.sol
+========
 
     function responder(uint8 opcion) external soloJugador {
         
@@ -148,5 +111,5 @@ contract quienqsm{
         payable(msg.sender).transfer(jugadores[msg.sender].premioActual);
         delete jugadores[msg.sender];
     }
+>>>>>>>> parent of c727f5c (05/09):blockchain/contracts/quienqsm.sol
 }
-*/

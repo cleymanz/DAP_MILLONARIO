@@ -9,8 +9,5 @@
     "frontend"
   ],
   "scripts": {},
-  "keywords": [],
-  "dependencies": {
-    "ethers": "^6.7.1"
-  }
+  "keywords": []
 }
