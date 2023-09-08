@@ -3,6 +3,7 @@ import './App.css';
 import { getVerificaWallet } from './fetchers/quienqsm';
 import { LlamarPreguntas } from './components/getPreguntaAleatoria';
 import { getPreguntaAleatoria } from './fetchers/quienqsm';
+import { getaprobarjuego } from './fetchers/quienqsm';
 import { approveTokens } from './fetchers/quienqsm';
 import { getIniciarJuego } from './fetchers/quienqsm';
 //import { setRespuestaSeleccionada } from './fetchers/quienqsm';
@@ -40,8 +41,8 @@ function App() {
   const handleClick = async () => {
     if (isValidEthereumAddress(address)) {
       try {
-        approveTokens(address);
-        getIniciarJuego();
+        //getaprobarjuego(address);
+        //getIniciarJuego();
         getApiData();
     } catch (error: any) {
       setMessage(error.message || "Hubo un error al intentar aprobar los tokens.");

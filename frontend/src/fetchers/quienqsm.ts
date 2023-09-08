@@ -7,7 +7,7 @@ export const getVerificaWallet = async (wallet_usuario: string) =>
     response.json()
   );
   */
-
+//OK
 export const getVerificaWallet = async (address: string) => {
   try {
     const response = await fetch(`http://localhost:20001/verificar-saldo?address=${address}`);
@@ -19,6 +19,7 @@ export const getVerificaWallet = async (address: string) => {
   }
 }
 
+//OK
 export const getPreguntaAleatoria = async () => {
   try {
     const response = await fetch(`http://localhost:20001/obtener-pregunta-aleatoria`);
@@ -34,6 +35,7 @@ export const getPreguntaAleatoria = async () => {
   }
 }
 
+//OK
 export const setRespuestaSeleccionada = async (option: number) => {
   const response = await fetch('http://localhost:20001/set-respuesta-seleccionada', {
     method: 'PUT',
@@ -50,6 +52,17 @@ export const setRespuestaSeleccionada = async (option: number) => {
 
   return response.json();
 };
+
+export const getaprobarjuego = async (address: string) => {
+  try {
+    const response = await fetch(`http://localhost:20001/approve-tokens?address=${address}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error al aprobar la billetera:', error);
+    throw error;
+  }
+}
 
 export const getIniciarJuego = async () => {
   try {
@@ -84,21 +97,4 @@ export const enviarRespuesta = async (respuesta: number) => {
     console.error('Error al enviar la respuesta:', error);
     throw error;
   }
-};
-
-export const approveTokens = async (address: string) => {
-  try {
-
-    const response = await fetch(`http://localhost:20001/aprobar-transferencia?address=${address}`);
-    console.log('dirección response: ', response.text);
-
-      if (!response.ok) {
-        throw new Error('Error HTTP: ${response.status} - ${response.statusText}');
-      }
-
-    const data = await response.json();
-        return data;
-    } catch (error:any) {
-       throw error;
-      } 
 };

@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import express, { Express, Request, Response, request } from 'express';
 import { getquienqsmcontract } from './constracts/qqsmChiken.contract';
 import { getChikenTokenContract } from './constracts/ChikenToken.contract';
+import { getpreguntascontract } from './constracts/preguntasqqsm.contract';
 //import { mintChikenTokens } from './constracts/ChikenToken.contract';  // Asegúrate de importarlo correctamente
 import { ethers} from 'ethers';
 import Web3 from 'web3';
-import { ChikenToken } from '../../blockchain/typechain/ChikenToken';
 
 dotenv.config();
 
@@ -45,7 +45,7 @@ app.get('/verificar-saldo', async (req, res) => {
 });
 //OK
 app.get('/obtener-pregunta-aleatoria', async (req: Request, res: Response) => {
-  const contrato = getquienqsmcontract();
+  const contrato = getpreguntascontract();
 
   try {
     const cantidadDePreguntas = 50;
@@ -86,15 +86,10 @@ app.post('/iniciar-juego', async (req, res) => {
 
 app.post('/enviar-respuesta', async (req: Request, res: Response) => {
   try {
-    const { walletAddress, respuesta } = req.body; // Obtiene la dirección de billetera y la respuesta del cuerpo de la solicitud
-    const contrato = getquienqsmcontract(); // Obtén la instancia del contrato
-
-    // Llama a la función responder en tu contrato
+    const { walletAddress, respuesta } = req.body;
+    const contrato = getquienqsmcontract();
     const tx = await contrato.responder(respuesta, { from: walletAddress });
-
-    // Espera a que la transacción sea minada
     await tx.wait();
-
     res.status(200).send({ message: "Respuesta enviada con éxito" });
   } catch (error) {
     console.error("Error al enviar la respuesta:", error);
@@ -102,39 +97,31 @@ app.post('/enviar-respuesta', async (req: Request, res: Response) => {
   }
 });
 
-app.get('/aprobar-transferencia', async (req, res) => {
+app.get('/approve-tokens', async (req, res) => {
   const walletAddress = req.query.address;
   const requiredBalance = 50;
-
   try {
-    const chikenTokenContract = getChikenTokenContract();
-    const aprobar = await chikenTokenContract.approve(walletAddress as string, requiredBalance);
+    const chikenTokenContract = getquienqsmcontract();
+    const tx = await chikenTokenContract.approve(walletAddress as string, requiredBalance);
+    res.status(200).send({ message: 'Tokens approved successfully', txHash: tx.transactionHash });
+  } catch (error:any) {
+    console.error('Error approving tokens:', error);
+    res.status(500).send('Error approving tokens.');
+  }
+});
+/*
+app.get('/aprobar-juego', async (req, res) => {
+  const walletAddress = req.query.address;
+  const requiredBalance = 50;
+  try {
+    const  = getquienqsmcontract();
+    const aprobar = await chikenTokenContract.aprobarTransferencia(walletAddress as string, requiredBalance);
     res.json({ success: aprobar});
-    console.log('Wallet aprobado');
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
-/*
-app.get('/mint', async (req, res) => {
-  const amount = typeof req.query.amount === 'string' ? req.query.amount : undefined;
-  const recipientAddress = typeof req.query.recipientAddress === 'string' ? req.query.recipientAddress : undefined;
-
-  if (!amount || !recipientAddress) {
-      return res.status(400).json({ success: false, message: 'amount and recipientAddress are required' });
-  }
-
-  try {
-      const receipt = await mintChikenTokens(amount, recipientAddress);
-      res.json({ success: true, receipt });
-  } catch (error: any) {
-      console.error("Error minting tokens:", error);
-      res.status(500).json({ success: false, message: error.message });
-  }
-});
-*/
-
+¨*/
 app.listen(port, () => {
   console.log(`⚡️[server]: DApp API Server is running at http://localhost:${port}`);
 });
-

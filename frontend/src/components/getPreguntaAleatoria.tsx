@@ -8,6 +8,7 @@ export const LlamarPreguntas = ({ pregunta }: { pregunta: IPregunta }) => {
 
   const handleRespuesta = async (index: number) => {
     setRespuestaSeleccionada(index);
+    console.log("respuesta entregada: ", index);
     try {
       const response = await enviarRespuesta(index);
       if (response.message === "Respuesta enviada con éxito") {
@@ -40,11 +41,16 @@ export const LlamarPreguntas = ({ pregunta }: { pregunta: IPregunta }) => {
             {opcion}
           </button>
         ))}
-        {respuestaSeleccionada !== null && (
+        {respuestaSeleccionada === parseInt(pregunta.respuestaCorrecta) -1 && (
           <div>
-            {esCorrecto ? '¡Correcto, Pasamos a la siguiente Pregunta!' : `Incorrecto. La respuesta correcta era: ${pregunta.opciones[parseInt(pregunta.respuestaCorrecta) - 1]}`}
+            {'Respuesta correcta!!!'}
           </div>
-        )}
+        )        
+        }else{
+          <div>
+          {'Respuesta incorrecta!!!'}
+        </div>
+        }
       </>
     )}
   </div>
