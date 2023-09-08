@@ -1,52 +1,17 @@
 import { useState, useEffect } from 'react';
-import { getPreguntaAleatoria } from '../fetchers/quienqsm';
 import { IPregunta } from '../components/types';
-<<<<<<< HEAD
-import {enviarRespuesta} from '../fetchers/quienqsm';
-=======
-/*
-export const LlamarPreguntas = () => {
-  interface IPregunta {
-    enunciado: string;
-    opciones: string[];
-    respuestaCorrecta: string;
-  }
->>>>>>> parent of c727f5c (05/09)
 
-  const [pregunta, setpregunta] = useState<IPregunta | null>(null);
-  const [respuestaSeleccionada, setRespuestaSeleccionada] = useState<string>("");
+export const LlamarPreguntas = ({ pregunta }: { pregunta: IPregunta }) => {
+  const [respuestaSeleccionada, setRespuestaSeleccionada] = useState<number | null>(null);
+  const [esCorrecto, setEsCorrecto] = useState<boolean | null>(null);
 
-<<<<<<< HEAD
-  const handleRespuesta = async (index: number) => {
+  const handleRespuesta = (index: number) => {
     setRespuestaSeleccionada(index);
-    try {
-      const response = await enviarRespuesta(index);
-      if (response.message === "Respuesta enviada con éxito") {
-
-      }
-    } catch (error) {
-      console.error("Error al enviar la respuesta:", error);
-    }
+    // Aquí estás comparando la respuesta del jugador con la respuesta correcta.
+    setEsCorrecto(index === parseInt(pregunta.respuestaCorrecta) - 1); // Restamos 1 porque la indexación de arrays empieza en 0.
   };
-=======
-  //res.json({ success: hasSufficientBalance, balance: balanceEth });
-
-
-  useEffect(() => {
-    const fetchPregunta = async () => {
-      const data = await getPreguntaAleatoria();
-      setpregunta(data);
-    }
-    fetchPregunta();
-  }, []);
->>>>>>> parent of c727f5c (05/09)
-
-  useEffect(() => {
-
-  }, []);
 
   return (
-<<<<<<< HEAD
     <div
     style={{
       display: 'flex',
@@ -66,45 +31,11 @@ export const LlamarPreguntas = () => {
         ))}
         {respuestaSeleccionada !== null && (
           <div>
-            {esCorrecto ? '¡Correcto, Pasamos a la siguiente Pregunta!' : `Incorrecto. La respuesta correcta era: ${pregunta.opciones[parseInt(pregunta.respuestaCorrecta) - 1]}`}
+            {esCorrecto ? '¡Correcto!' : `Incorrecto. La respuesta correcta era: ${pregunta.opciones[parseInt(pregunta.respuestaCorrecta) - 1]}`}
           </div>
-=======
-    <div>
-        {pregunta && (
-            <>
-            <h1>{pregunta.enunciado}</h1>
-            <form>
-              {pregunta.opciones.map((opcion, index) => (
-                <div key={index}>
-                  <input 
-                    type="radio" 
-                    name="opcion" 
-                    value={opcion} 
-                    onChange={(e) => setRespuestaSeleccionada(e.target.value)}
-                  />
-                  <label>{opcion}</label>
-                </div>
-              ))}
-              <button type="button" onClick={async () => await setRespuestaSeleccionada(respuestaSeleccionada)}>Responder</button>
-            </form>
-          </>
->>>>>>> parent of c727f5c (05/09)
         )}
-    </div>
-  );
-}; 
-*/
-export const LlamarPreguntas = ({ pregunta }: { pregunta: IPregunta }) => {
-  console.log("Not found", pregunta);
-  //... resto de tu código ...
-  return (
-    <div>
-        {pregunta && (
-            <>
-            <h1>{pregunta.enunciado}</h1>
-            {/* ... resto de tu código ... */}
-          </>
-        )}
-    </div>
+      </>
+    )}
+  </div>
   );
 };
